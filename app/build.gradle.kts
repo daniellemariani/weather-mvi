@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -44,6 +45,10 @@ dependencies {
     // Networking - Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
+
+    // Local Storage - Room
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
