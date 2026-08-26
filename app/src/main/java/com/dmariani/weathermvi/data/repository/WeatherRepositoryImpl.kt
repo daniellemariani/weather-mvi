@@ -9,8 +9,9 @@ import com.dmariani.weathermvi.domain.model.Weather
 import com.dmariani.weathermvi.domain.repository.WeatherRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class WeatherRepositoryImpl(
+class WeatherRepositoryImpl @Inject constructor(
     private val weatherDao: WeatherDao,
     private val weatherApi: WeatherApi
 ) : WeatherRepository {
