@@ -1,7 +1,10 @@
 package com.dmariani.weathermvi.ui.main
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -73,7 +76,7 @@ fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
  * it directly previewable and testable with fake data.
  */
 @Composable
-public fun MainContent(
+fun MainContent(
     state: WeatherUiState,
     snackbarHostState: SnackbarHostState,
     onIntent: (WeatherIntent) -> Unit
@@ -82,7 +85,9 @@ public fun MainContent(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
+        Column(modifier = Modifier
+            .padding(paddingValues)
+            .padding(16.dp)) {
             // Section: City Picker
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -99,9 +104,18 @@ public fun MainContent(
             }
 
             // Section: Recent Searches
-            LazyColumn() {
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
                 items(state.recentSearches, key = { it }) { cityName ->
-                    Text(text = cityName)
+                    Text(
+                        text = cityName,
+                        modifier = Modifier.clickable {
+                            val city = Cities.ALL.find { it.name == cityName }
+                            city?.let { onIntent(WeatherIntent.SelectCity(it)) }
+                        }
+                    )
                 }
             }
 
