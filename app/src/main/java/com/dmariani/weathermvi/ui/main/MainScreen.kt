@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -97,8 +99,10 @@ public fun MainContent(
             }
 
             // Section: Recent Searches
-            state.recentSearches.forEach {
-                // TODO("Load Recent Searches")
+            LazyColumn() {
+                items(state.recentSearches, key = { it }) { cityName ->
+                    Text(text = cityName)
+                }
             }
 
             // Section: Content
@@ -251,8 +255,15 @@ fun MainScreenSuccessStatePreview() {
             isDay = true
         )
 
+        val recentSearches = listOf("Los Angeles", "Caracas", "New York", "Madrid", "Buenos Aires")
+
+        val state = WeatherUiState(
+            recentSearches = recentSearches,
+            contentState = WeatherContentState.Success(weather)
+        )
+
         MainContent(
-            state = WeatherUiState(contentState = WeatherContentState.Success(weather)),
+            state = state,
             snackbarHostState = SnackbarHostState(),
             onIntent = {}
         )
