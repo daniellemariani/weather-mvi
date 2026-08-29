@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -106,7 +106,12 @@ public fun MainContent(
                 is WeatherContentState.Idle -> { /* do nothing */ }
                 is WeatherContentState.Loading -> { Loader() }
                 is WeatherContentState.Success -> { WeatherView(content.weather) }
-                is WeatherContentState.Error -> { /* Show error */ }
+                is WeatherContentState.Error -> {
+                    ErrorView(
+                        error = content.message,
+                        onRetry = { onIntent(WeatherIntent.Retry) }
+                    )
+                }
             }
         }
     }
@@ -189,6 +194,25 @@ private fun WeatherView(weather: Weather) {
         }
     }
 }
+
+@Composable
+private fun ErrorView(error: String, onRetry: () -> Unit) {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = error)
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(onClick = onRetry) {
+                Text(text = stringResource(R.string.retry))
+            }
+        }
+    }
+}
 //endregion
 
 //region Preview
@@ -229,6 +253,18 @@ fun MainScreenSuccessStatePreview() {
 
         MainContent(
             state = WeatherUiState(contentState = WeatherContentState.Success(weather)),
+            snackbarHostState = SnackbarHostState(),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenErrorStatePreview() {
+    WeatherTheme {
+        MainContent(
+            state = WeatherUiState(contentState = WeatherContentState.Error("Unable to load weather")),
             snackbarHostState = SnackbarHostState(),
             onIntent = {}
         )

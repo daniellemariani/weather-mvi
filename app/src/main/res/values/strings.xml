@@ -7,4 +7,5 @@
     <string name="city_condition">%1$s - %2$s</string>
     <string name="day">Day</string>
     <string name="night">Night</string>
+    <string name="retry">Retry</string>
 </resources>
