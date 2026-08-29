@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dmariani.weathermvi.R
@@ -70,7 +71,7 @@ fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
  * it directly previewable and testable with fake data.
  */
 @Composable
-private fun MainContent(
+public fun MainContent(
     state: WeatherUiState,
     snackbarHostState: SnackbarHostState,
     onIntent: (WeatherIntent) -> Unit
@@ -104,7 +105,7 @@ private fun MainContent(
             when (val content = state.contentState) {
                 is WeatherContentState.Idle -> { /* do nothing */ }
                 is WeatherContentState.Loading -> { Loader() }
-                is WeatherContentState.Success -> { /* Show weather */ }
+                is WeatherContentState.Success -> { WeatherView(content.weather) }
                 is WeatherContentState.Error -> { /* Show error */ }
             }
         }
@@ -165,10 +166,33 @@ private fun Loader() {
         }
     }
 }
+
+@Composable
+private fun WeatherView(weather: Weather) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Row (verticalAlignment = Alignment.CenterVertically) {
+                Text(text = stringResource(R.string.city_weather, weather.city))
+                Spacer(modifier = Modifier.width(18.dp))
+                Text(
+                    text = stringResource(R.string.city_temperature, weather.temperature),
+                    fontSize = 32.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            val dayNightLabel = if (weather.isDay) stringResource(R.string.day) else stringResource(R.string.night)
+            Text(text = stringResource(R.string.city_condition,  weather.condition, dayNightLabel))
+        }
+    }
+}
 //endregion
 
 //region Preview
-@Preview(showBackground = false)
+@Preview(showBackground = true)
 @Composable
 fun MainScreenIdleStatePreview() {
     WeatherTheme {
@@ -180,12 +204,31 @@ fun MainScreenIdleStatePreview() {
     }
 }
 
-@Preview(showBackground = false)
+@Preview(showBackground = true)
 @Composable
 fun MainScreenLoadingStatePreview() {
     WeatherTheme {
         MainContent(
             state = WeatherUiState(contentState = WeatherContentState.Loading),
+            snackbarHostState = SnackbarHostState(),
+            onIntent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenSuccessStatePreview() {
+    WeatherTheme {
+        val weather = Weather(
+            city = "Los Angeles",
+            temperature = 32.0,
+            condition = "Clear",
+            isDay = true
+        )
+
+        MainContent(
+            state = WeatherUiState(contentState = WeatherContentState.Success(weather)),
             snackbarHostState = SnackbarHostState(),
             onIntent = {}
         )
