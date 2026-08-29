@@ -1,11 +1,16 @@
 package com.dmariani.weathermvi.ui.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -23,14 +28,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dmariani.weathermvi.R
 import com.dmariani.weathermvi.domain.model.Cities
 import com.dmariani.weathermvi.domain.model.City
+import com.dmariani.weathermvi.domain.model.Weather
 import com.dmariani.weathermvi.ui.theme.WeatherTheme
 
+//region Composable Screen
 /**
  * Stateful entry point for the weather screen. Obtains [WeatherViewModel] via Hilt,
  * collects its [WeatherUiState] and one-time Snackbar events, and delegates all
@@ -61,7 +70,7 @@ fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
  * it directly previewable and testable with fake data.
  */
 @Composable
-fun MainContent(
+private fun MainContent(
     state: WeatherUiState,
     snackbarHostState: SnackbarHostState,
     onIntent: (WeatherIntent) -> Unit
@@ -94,17 +103,19 @@ fun MainContent(
             // Section: Content
             when (val content = state.contentState) {
                 is WeatherContentState.Idle -> { /* do nothing */ }
-                is WeatherContentState.Loading ->  { /* show loader */ }
-                is WeatherContentState.Success ->  { /* show weather */ }
-                is WeatherContentState.Error ->  { /* show error + retry */ }
+                is WeatherContentState.Loading -> { Loader() }
+                is WeatherContentState.Success -> { /* Show weather */ }
+                is WeatherContentState.Error -> { /* Show error */ }
             }
         }
     }
 }
+//endregion
 
+//region Composable Components
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CityPicker(
+private fun CityPicker(
     selectedCity: City?,
     cities: List<City>,
     onCitySelected: (City) -> Unit,
@@ -141,9 +152,25 @@ fun CityPicker(
     }
 }
 
+@Composable
+private fun Loader() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(strokeWidth = 4.dp)
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(text = stringResource(R.string.loading_message))
+        }
+    }
+}
+//endregion
+
+//region Preview
 @Preview(showBackground = false)
 @Composable
-fun MainContentIdlePreview() {
+fun MainScreenIdleStatePreview() {
     WeatherTheme {
         MainContent(
             state = WeatherUiState(),
@@ -152,3 +179,16 @@ fun MainContentIdlePreview() {
         )
     }
 }
+
+@Preview(showBackground = false)
+@Composable
+fun MainScreenLoadingStatePreview() {
+    WeatherTheme {
+        MainContent(
+            state = WeatherUiState(contentState = WeatherContentState.Loading),
+            snackbarHostState = SnackbarHostState(),
+            onIntent = {}
+        )
+    }
+}
+//endregion

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Weather MVI</string>
     <string name="city">City:</string>
+    <string name="loading_message">Loading weather information&#8230;</string>
 </resources>
