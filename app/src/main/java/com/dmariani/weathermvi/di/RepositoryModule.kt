@@ -1,6 +1,8 @@
 package com.dmariani.weathermvi.di
 
+import com.dmariani.weathermvi.data.repository.SettingsRepositoryImpl
 import com.dmariani.weathermvi.data.repository.WeatherRepositoryImpl
+import com.dmariani.weathermvi.domain.repository.SettingsRepository
 import com.dmariani.weathermvi.domain.repository.WeatherRepository
 import dagger.Binds
 import dagger.Module
@@ -12,5 +14,8 @@ import dagger.hilt.components.SingletonComponent
 abstract class RepositoryModule {
 
     @Binds
-    abstract fun provideRepository(impl: WeatherRepositoryImpl): WeatherRepository
+    abstract fun provideWeatherRepository(impl: WeatherRepositoryImpl): WeatherRepository
+
+    @Binds
+    abstract fun provideSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
 }
