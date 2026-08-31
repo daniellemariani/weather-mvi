@@ -3,8 +3,18 @@ package com.dmariani.weathermvi.ui.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.dmariani.weathermvi.ui.settings.SettingsScreen
 import com.dmariani.weathermvi.ui.theme.WeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.Serializable
+
+@Serializable
+object Main
+@Serializable
+object Settings
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -14,7 +24,22 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             WeatherTheme {
-                MainScreen()
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = Main
+                ) {
+                    composable<Main> {
+                        MainScreen(
+                            onNavigateToSettings = { navController.navigate(Settings) }
+                        )
+                    }
+                    composable<Settings> {
+                        SettingsScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+                }
             }
         }
     }

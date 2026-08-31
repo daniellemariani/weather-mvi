@@ -7,24 +7,28 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,8 +56,10 @@ import com.dmariani.weathermvi.ui.theme.WeatherTheme
  * rendering to [MainContent].
  */
 @Composable
-fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
-
+fun MainScreen(
+    onNavigateToSettings: () -> Unit,
+    viewModel: WeatherViewModel = hiltViewModel()
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -66,6 +72,7 @@ fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
     MainContent(
         state = state,
         snackbarHostState = snackbarHostState,
+        onNavigateToSettings = onNavigateToSettings,
         onIntent = viewModel::onIntent
     )
 }
@@ -75,14 +82,29 @@ fun MainScreen(viewModel: WeatherViewModel = hiltViewModel()) {
  * Hilt — takes the current [state] and reports user actions via [onIntent], making
  * it directly previewable and testable with fake data.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
     state: WeatherUiState,
     snackbarHostState: SnackbarHostState,
+    onNavigateToSettings: () -> Unit,
     onIntent: (WeatherIntent) -> Unit
 ) {
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.settings_title)
+                        )
+                    }
+                }
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(modifier = Modifier
@@ -122,12 +144,18 @@ fun MainContent(
             // Section: Content
             when (val content = state.contentState) {
                 is WeatherContentState.Idle -> { /* do nothing */ }
-                is WeatherContentState.Loading -> { Loader() }
-                is WeatherContentState.Success -> { WeatherView(content.weather) }
+                is WeatherContentState.Loading -> { Loader(modifier = Modifier.weight(1f)) }
+                is WeatherContentState.Success -> {
+                    WeatherView(
+                        weather = content.weather,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 is WeatherContentState.Error -> {
                     ErrorView(
                         error = content.message,
-                        onRetry = { onIntent(WeatherIntent.Retry) }
+                        onRetry = { onIntent(WeatherIntent.Retry)},
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -177,9 +205,9 @@ private fun CityPicker(
 }
 
 @Composable
-private fun Loader() {
+private fun Loader(modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -191,9 +219,9 @@ private fun Loader() {
 }
 
 @Composable
-private fun WeatherView(weather: Weather) {
+private fun WeatherView(weather: Weather, modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -214,10 +242,10 @@ private fun WeatherView(weather: Weather) {
 }
 
 @Composable
-private fun ErrorView(error: String, onRetry: () -> Unit) {
+private fun ErrorView(error: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -241,6 +269,7 @@ fun MainScreenIdleStatePreview() {
         MainContent(
             state = WeatherUiState(),
             snackbarHostState = SnackbarHostState(),
+            onNavigateToSettings = {},
             onIntent = {}
         )
     }
@@ -253,6 +282,7 @@ fun MainScreenLoadingStatePreview() {
         MainContent(
             state = WeatherUiState(contentState = WeatherContentState.Loading),
             snackbarHostState = SnackbarHostState(),
+            onNavigateToSettings = {},
             onIntent = {}
         )
     }
@@ -279,6 +309,7 @@ fun MainScreenSuccessStatePreview() {
         MainContent(
             state = state,
             snackbarHostState = SnackbarHostState(),
+            onNavigateToSettings = {},
             onIntent = {}
         )
     }
@@ -291,6 +322,7 @@ fun MainScreenErrorStatePreview() {
         MainContent(
             state = WeatherUiState(contentState = WeatherContentState.Error("Unable to load weather")),
             snackbarHostState = SnackbarHostState(),
+            onNavigateToSettings = {},
             onIntent = {}
         )
     }
