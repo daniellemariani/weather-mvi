@@ -46,7 +46,7 @@ class WeatherViewModel @Inject constructor(
     fun onIntent(intent: WeatherIntent) {
         when (intent) {
             is WeatherIntent.SelectCity -> handleSelectCity(intent.city)
-            is WeatherIntent.Retry -> { handleRetry() }
+            is WeatherIntent.Retry -> handleRetry()
         }
     }
 
