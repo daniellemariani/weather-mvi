@@ -8,4 +8,8 @@
     <string name="day">Day</string>
     <string name="night">Night</string>
     <string name="retry">Retry</string>
+    <string name="settings_title">Settings</string>
+    <string name="back">Back</string>
+    <string name="celsius">Celsius</string>
+    <string name="fahrenheit">Fahrenheit</string>
 </resources>
