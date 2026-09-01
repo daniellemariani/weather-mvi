@@ -3,7 +3,7 @@
     <string name="city">City:</string>
     <string name="loading_message">Loading weather information&#8230;</string>
     <string name="city_weather">Currently in %1$s:</string>
-    <string name="city_temperature">%1$.1f °C</string>
+    <string name="city_temperature">%1$.1f °%2$s</string>
     <string name="city_condition">%1$s - %2$s</string>
     <string name="day">Day</string>
     <string name="night">Night</string>

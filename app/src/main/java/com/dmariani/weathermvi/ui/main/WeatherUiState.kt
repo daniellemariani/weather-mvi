@@ -11,6 +11,7 @@ import com.dmariani.weathermvi.domain.model.Weather
 data class WeatherUiState(
     val selectedCity: City? = null,
     val recentSearches: List<String> = emptyList(),
+    val isFahrenheit: Boolean = false,
     val contentState: WeatherContentState = WeatherContentState.Idle
 )
 

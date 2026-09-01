@@ -3,6 +3,7 @@ package com.dmariani.weathermvi.ui.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dmariani.weathermvi.domain.model.City
+import com.dmariani.weathermvi.domain.repository.SettingsRepository
 import com.dmariani.weathermvi.domain.repository.WeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
-    private val repository: WeatherRepository
+    private val weatherRepository: WeatherRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(WeatherUiState())
@@ -31,9 +33,16 @@ class WeatherViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.observeRecentSearches().collect { searches ->
+            weatherRepository.observeRecentSearches().collect { searches ->
                 // create copy of WeatherUiState and update searches
                 _state.update { it.copy(recentSearches = searches) }
+            }
+        }
+
+        viewModelScope.launch {
+            settingsRepository.isFahrenheit.collect { newValue ->
+                // create copy of WeatherUiState and update isFahrenheit
+                _state.update { it.copy(isFahrenheit = newValue) }
             }
         }
     }
@@ -69,7 +78,7 @@ class WeatherViewModel @Inject constructor(
 
         fetchJob  = viewModelScope.launch {
             // fetch weather
-            repository.getWeather(city = city, forceRefresh = forceRefresh)
+            weatherRepository.getWeather(city = city, forceRefresh = forceRefresh)
                 .onSuccess { weather ->
                     _state.update {
                         it.copy(contentState = WeatherContentState.Success(weather))

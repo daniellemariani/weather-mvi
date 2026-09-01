@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,6 +49,7 @@ import com.dmariani.weathermvi.domain.model.Cities
 import com.dmariani.weathermvi.domain.model.City
 import com.dmariani.weathermvi.domain.model.Weather
 import com.dmariani.weathermvi.ui.theme.WeatherTheme
+import com.dmariani.weathermvi.util.celsiusToFahrenheit
 
 //region Composable Screen
 /**
@@ -144,18 +146,21 @@ fun MainContent(
             // Section: Content
             when (val content = state.contentState) {
                 is WeatherContentState.Idle -> { /* do nothing */ }
-                is WeatherContentState.Loading -> { Loader(modifier = Modifier.weight(1f)) }
+                is WeatherContentState.Loading -> {
+                    Loader(modifier = Modifier.weight(1f).fillMaxSize())
+                }
                 is WeatherContentState.Success -> {
                     WeatherView(
                         weather = content.weather,
-                        modifier = Modifier.weight(1f)
+                        isFahrenheit = state.isFahrenheit,
+                        modifier = Modifier.weight(1f).fillMaxSize()
                     )
                 }
                 is WeatherContentState.Error -> {
                     ErrorView(
                         error = content.message,
                         onRetry = { onIntent(WeatherIntent.Retry)},
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).fillMaxSize()
                     )
                 }
             }
@@ -219,7 +224,11 @@ private fun Loader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun WeatherView(weather: Weather, modifier: Modifier = Modifier) {
+private fun WeatherView(
+    weather: Weather,
+    isFahrenheit: Boolean,
+    modifier: Modifier = Modifier
+) {
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -228,8 +237,12 @@ private fun WeatherView(weather: Weather, modifier: Modifier = Modifier) {
             Row (verticalAlignment = Alignment.CenterVertically) {
                 Text(text = stringResource(R.string.city_weather, weather.city))
                 Spacer(modifier = Modifier.width(18.dp))
+
+                val displayTemperature = if (isFahrenheit) celsiusToFahrenheit(weather.temperature) else weather.temperature
+                val unitSymbol = if (isFahrenheit) "F" else "C"
+
                 Text(
-                    text = stringResource(R.string.city_temperature, weather.temperature),
+                    text = stringResource(R.string.city_temperature, displayTemperature, unitSymbol),
                     fontSize = 32.sp
                 )
             }
