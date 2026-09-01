@@ -81,7 +81,12 @@ dependencies {
     // Material Icons
     implementation(libs.androidx.material.icons.core)
 
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.room.testing)
 }
