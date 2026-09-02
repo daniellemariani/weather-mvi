@@ -1,6 +1,6 @@
 # Weather MVI
 
-A sample Android weather app used as a hands-on refresher for MVI architecture, Coroutines/Flow, Hilt, Room, and Retrofit.
+A sample Android weather app using MVI architecture, Coroutines/Flow, Hilt, Room, and Retrofit.
 
 ## Purpose
 
@@ -37,6 +37,8 @@ This app has a sibling MVVM project exploring the same domain with RxJava, `Live
 | Weather API | [Open-Meteo](https://api.open-meteo.com/v1/forecast) — free, no API key required |
 | City input | Predefined list of 10 cities (name + lat/lon), matching the MVVM app's list; no free-text search or geocoding |
 | Local cache | Room, with suspend/Flow-typed DAO methods |
+| Navigation | Jetpack Navigation for Compose (`NavHost`/`NavController`) — Main + Settings screens |
+| App settings | Preferences DataStore, wrapped by a `SettingsRepository` (same abstraction pattern as `WeatherRepository` over Room/Retrofit) — stores °C/°F toggle |
 | Testing | JUnit + MockK; Turbine for `StateFlow`/`Flow`/`Channel` assertions; Room in-memory DB for DAO integration tests |
 
 ## Project Structure
@@ -99,5 +101,6 @@ com.dmariani.weathermvi
 7. UI state & intent design (`WeatherUiState`, `WeatherIntent`)
 8. `WeatherViewModel` (`StateFlow`, `Channel`→`Flow` one-time events)
 9. UI (`MainScreen`, `MainActivity`, Compose theming)
-10. Fake/forced-state repository
-11. Tests, layer by layer (JUnit, MockK, Turbine, Room in-memory DB)
+10. Settings screen — Jetpack Compose Navigation, Preferences DataStore, `SettingsRepository` (abstracting over DataStore, same pattern as `WeatherRepository` over Room/Retrofit), `SettingsUiState`/`SettingsViewModel`; `WeatherViewModel` combines weather state with the unit preference for °C/°F display conversion
+11. Fake/forced-state repository
+12. Tests, layer by layer (JUnit, MockK, Turbine, Room in-memory DB) — covering Settings/DataStore as well as Weather
