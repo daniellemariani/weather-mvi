@@ -14,7 +14,7 @@ This project exists to practice and reinforce core Android architecture like MVI
 5. Shows an error state on failure, with a retry action.
 6. Maintains a small recent-searches list.
 7. Caches results locally: checks cache first (fresh → use cached; stale/missing → hit network and cache the result); falls back to stale cache on network failure if available.
-8. Includes a fake/forced-state repository for testing — able to force Success, Error, Empty, and Slow-response scenarios independent of the real network.
+8. Includes a fake/forced-state repository for testing — able to force Success, Error, and Slow-response scenarios independent of the real network. (Empty was deliberately skipped: it has no natural mapping onto this app's `Result<Weather>` contract, unlike a list-based feature.)
 
 **Architectural focus:**
 - **Single, unified, immutable `StateFlow<WeatherUiState>`** exposed by the ViewModel — intentional, to feel the tradeoff MVI has vs. MVVM's multiple independent observable properties. All UI-relevant state (loading, weather, error, recent searches) lives inside one state hierarchy, updated atomically, rather than several independent fields that can drift out of sync.
@@ -57,7 +57,8 @@ com.dmariani.weathermvi
 │   │   └── WeatherResponse.kt
 │   │
 │   ├── repository
-│   │   └── WeatherRepositoryImpl.kt
+│   │   ├── WeatherRepositoryImpl.kt
+│   │   └── SettingsRepositoryImpl.kt   // wraps Preferences DataStore
 │   │
 │   └── Mappers.kt
 │
@@ -68,26 +69,60 @@ com.dmariani.weathermvi
 │   │   └── Cities.kt
 │   │
 │   └── repository
-│       └── WeatherRepository.kt
+│       ├── WeatherRepository.kt
+│       └── SettingsRepository.kt
 │
 ├── di
 │   ├── NetworkModule.kt
 │   ├── DatabaseModule.kt
-│   └── RepositoryModule.kt
+│   ├── SettingsModule.kt          // provides DataStore<Preferences>
+│   └── RepositoryModule.kt        // @Binds for both repositories
 │   // no manual AppComponent/ViewModelModule/ViewModelFactory/ViewModelKey —
 │   // Hilt's @HiltViewModel + @AndroidEntryPoint generate this wiring
 │
 ├── ui
 │   ├── main
-│   │   ├── MainScreen.kt          // @Composable, observes StateFlow, dispatches Intents
-│   │   ├── MainActivity.kt        // @AndroidEntryPoint, hosts the Composable
-│   │   ├── WeatherViewModel.kt    // @HiltViewModel
-│   │   ├── WeatherUiState.kt      // single state data/sealed class
+│   │   ├── MainActivity.kt        // @AndroidEntryPoint, hosts NavHost (Main/Settings routes)
+│   │   ├── MainScreen.kt          // MainScreen, MainContent, CityPicker, Loader,
+│   │   │                          // WeatherView, ErrorView + @Preview functions
+│   │   ├── WeatherViewModel.kt    // @HiltViewModel — combines WeatherRepository +
+│   │   │                          // SettingsRepository for °C/°F display conversion
+│   │   ├── WeatherUiState.kt      // WeatherUiState + sealed WeatherContentState
 │   │   └── WeatherIntent.kt       // sealed class of user actions
+│   │
+│   ├── settings
+│   │   ├── SettingsScreen.kt      // SettingsScreen, SettingsContent, TemperatureUnitToggle
+│   │   ├── SettingsViewModel.kt   // @HiltViewModel
+│   │   ├── SettingsUiState.kt
+│   │   └── SettingsIntent.kt
 │   │
 │   └── theme/                     // Compose theming (Color.kt, Type.kt, Theme.kt)
 │
-└── WeatherMviApp.kt                // @HiltAndroidApp
+├── util
+│   └── TemperatureConverter.kt    // celsiusToFahrenheit — pure, unit-tested
+│
+└── WeatherApp.kt                  // @HiltAndroidApp
+```
+
+**Test source set** (`src/test`, mirrors the structure above):
+```
+com.dmariani.weathermvi
+│
+├── data
+│   ├── MappersTest.kt
+│   ├── WeatherCodeMappingTest.kt      // parameterized, full WMO bucket coverage
+│   └── repository
+│       ├── FakeWeatherRepository.kt   // forcedWeather / forcedError / delayMs
+│       └── FakeSettingsRepository.kt
+│
+├── util
+│   └── TemperatureConverterTest.kt
+│
+└── ui
+    ├── main
+    │   └── WeatherViewModelTest.kt    // StandardTestDispatcher, Turbine, fakes
+    └── settings
+        └── SettingsViewModelTest.kt
 ```
 
 ## Build Sequence
